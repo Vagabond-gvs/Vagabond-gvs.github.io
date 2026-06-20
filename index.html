@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vagabond — backend developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0E0F0C;
+    --bg-raised: #14150F;
+    --ink: #E8E6DD;
+    --ink-dim: #9C9A8E;
+    --ink-faint: #5C5B52;
+    --brass: #B89B6C;
+    --brass-dim: #6E5E42;
+    --line: #26271F;
+    --line-bright: #3A3B30;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --plex-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  :focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 3px;
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ===== Background route line (signature element) ===== */
+  .route-line {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-460px);
+    width: 2px;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .route-line svg { position: absolute; top: 0; left: -1px; }
+
+  @media (max-width: 980px) {
+    .route-line { display: none; }
+  }
+
+  /* ===== Header / nav ===== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(14,15,12,0.88);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .logo .dot { color: var(--brass); }
+  nav ul {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  nav a {
+    font-family: var(--plex-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-dim);
+    text-transform: lowercase;
+    transition: color 0.2s ease;
+    position: relative;
+  }
+  nav a:hover { color: var(--brass); }
+  @media (max-width: 640px) {
+    nav ul { gap: 16px; }
+    nav a { font-size: 11px; }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 120px 0 100px;
+    position: relative;
+  }
+  .coords {
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--brass-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .coords::before {
+    content: '';
+    width: 7px; height: 7px;
+    background: var(--brass);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(184,155,108,0.15);
+  }
+  h1 {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: clamp(40px, 7vw, 72px);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  h1 span { color: var(--brass); }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--ink-dim);
+    max-width: 540px;
+    font-weight: 300;
+    margin-bottom: 36px;
+  }
+  .hero-sub strong { color: var(--ink); font-weight: 500; }
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: var(--plex-mono);
+    font-size: 13px;
+    padding: 13px 22px;
+    border: 1px solid var(--line-bright);
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--brass);
+    color: var(--bg);
+    border-color: var(--brass);
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--ink); border-color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--brass); color: var(--brass); }
+
+  /* ===== Section scaffolding ===== */
+  section {
+    padding: 88px 0;
+    border-top: 1px solid var(--line);
+    position: relative;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .section-mark {
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--brass-dim);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  h2 {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .section-head .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* ===== About ===== */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 56px;
+  }
+  .about-text p { color: var(--ink-dim); margin-bottom: 16px; font-size: 15.5px; }
+  .about-text strong { color: var(--ink); font-weight: 500; }
+  .stat-list {
+    border-left: 1px solid var(--line-bright);
+    padding-left: 24px;
+  }
+  .stat-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label {
+    font-family: var(--plex-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stat-value { font-size: 15px; color: var(--ink); }
+  .stat-value.brass { color: var(--brass); font-family: var(--plex-mono); }
+
+  @media (max-width: 720px) {
+    .about-grid { grid-template-columns: 1fr; gap: 36px; }
+  }
+
+  /* ===== Stack ===== */
+  .stack-single {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .python-badge {
+    width: 86px;
+    height: 86px;
+    border: 1px solid var(--line-bright);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .python-badge svg { width: 46px; height: 46px; }
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    font-family: var(--plex-mono);
+    font-size: 12.5px;
+    padding: 7px 12px;
+    border: 1px solid var(--line-bright);
+    color: var(--ink-dim);
+    transition: all 0.2s ease;
+  }
+  .pill:hover {
+    border-color: var(--brass-dim);
+    color: var(--ink);
+  }
+  .stack-note {
+    color: var(--ink-dim);
+    font-size: 14.5px;
+    margin-top: 18px;
+    max-width: 520px;
+  }
+
+  /* ===== Waypoints / journey (timeline as actual sequence) ===== */
+  .waypoints { position: relative; }
+  .waypoint {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 24px;
+    padding-bottom: 44px;
+    position: relative;
+  }
+  .waypoint:last-child { padding-bottom: 0; }
+  .waypoint::before {
+    content: '';
+    position: absolute;
+    left: 47px;
+    top: 18px;
+    bottom: -44px;
+    width: 1px;
+    background: var(--line-bright);
+  }
+  .waypoint:last-child::before { display: none; }
+  .wp-marker {
+    font-family: var(--plex-mono);
+    font-size: 11px;
+    color: var(--brass-dim);
+    padding-top: 3px;
+    text-align: right;
+  }
+  .wp-marker .wp-dot {
+    display: block;
+    width: 9px; height: 9px;
+    background: var(--bg);
+    border: 1px solid var(--brass);
+    border-radius: 50%;
+    margin: 6px 0 0 auto;
+  }
+  .wp-content h3 {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .wp-content .wp-where {
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .wp-content p {
+    color: var(--ink-dim);
+    font-size: 14.5px;
+    max-width: 520px;
+  }
+  @media (max-width: 600px) {
+    .waypoint { grid-template-columns: 50px 1fr; }
+    .wp-marker { font-size: 10px; }
+  }
+
+  /* ===== Projects ===== */
+  .project-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .project {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.2s ease;
+  }
+  .project:first-child { padding-top: 0; }
+  .project:hover { background: var(--bg-raised); }
+  .project-name {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .project-tag {
+    font-family: var(--plex-mono);
+    font-size: 11px;
+    color: var(--brass);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .project-desc { color: var(--ink-dim); font-size: 14.5px; margin-bottom: 16px; }
+  .project-stack {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .project-stack span {
+    font-family: var(--plex-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .project-stack span:not(:last-child)::after { content: '·'; margin-left: 6px; color: var(--ink-faint); }
+  .project-link {
+    font-family: var(--plex-mono);
+    font-size: 12.5px;
+    color: var(--brass);
+    border-bottom: 1px solid var(--brass-dim);
+    padding-bottom: 2px;
+  }
+  .project-link:hover { color: var(--ink); border-color: var(--ink); }
+  @media (max-width: 720px) {
+    .project { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  /* ===== Contact ===== */
+  .contact-section { border-bottom: none; padding-bottom: 60px; }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .contact-card {
+    border: 1px solid var(--line-bright);
+    padding: 22px;
+    transition: border-color 0.2s ease;
+  }
+  .contact-card:hover { border-color: var(--brass-dim); }
+  .contact-card .cc-label {
+    font-family: var(--plex-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .contact-card .cc-value {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .contact-card:hover .cc-value { color: var(--brass); }
+  @media (max-width: 900px) {
+    .contact-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== GitHub repos (dynamic) ===== */
+  .gh-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .gh-profile-link {
+    font-family: var(--plex-mono);
+    font-size: 13px;
+    color: var(--brass);
+    border: 1px solid var(--brass-dim);
+    padding: 10px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+  .gh-profile-link:hover { background: var(--brass); color: var(--bg); }
+  .repo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .repo-grid { grid-template-columns: 1fr; }
+  }
+  .repo-card {
+    border: 1px solid var(--line-bright);
+    padding: 22px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .repo-card:hover { border-color: var(--brass-dim); background: var(--bg-raised); }
+  .repo-name {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .repo-name svg { width: 14px; height: 14px; color: var(--brass); flex-shrink: 0; }
+  .repo-desc {
+    color: var(--ink-dim);
+    font-size: 13.5px;
+    margin-bottom: 16px;
+    flex-grow: 1;
+  }
+  .repo-meta {
+    display: flex;
+    gap: 16px;
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    align-items: center;
+  }
+  .repo-meta .repo-lang::before {
+    content: '●';
+    color: var(--brass-dim);
+    margin-right: 5px;
+  }
+  .repo-meta .repo-stars { display: flex; align-items: center; gap: 4px; }
+  .gh-status, .lc-status {
+    font-family: var(--plex-mono);
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding: 30px 0;
+    text-align: center;
+    border: 1px dashed var(--line-bright);
+  }
+  .gh-status.error, .lc-status.error { color: var(--ink-faint); }
+
+  /* ===== LeetCode ===== */
+  .lc-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .lc-wrap { grid-template-columns: 1fr; gap: 32px; }
+  }
+  .lc-total {
+    border: 1px solid var(--line-bright);
+    padding: 28px;
+    text-align: center;
+  }
+  .lc-total .lc-num {
+    font-family: var(--mono);
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--brass);
+    line-height: 1;
+  }
+  .lc-total .lc-num-label {
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 10px;
+  }
+  .lc-total .lc-sub {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: var(--plex-mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .lc-bars { display: flex; flex-direction: column; gap: 18px; }
+  .lc-bar-row .lc-bar-top {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--plex-mono);
+    font-size: 12.5px;
+    margin-bottom: 8px;
+  }
+  .lc-bar-track {
+    height: 8px;
+    background: var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .lc-bar-fill {
+    height: 100%;
+    transition: width 0.6s ease;
+  }
+  .lc-bar-fill.easy { background: #6B9080; }
+  .lc-bar-fill.medium { background: var(--brass); }
+  .lc-bar-fill.hard { background: #A6594C; }
+  .lc-label-easy { color: #8FB5A3; }
+  .lc-label-medium { color: var(--brass); }
+  .lc-label-hard { color: #C17B6E; }
+  .lc-profile-link {
+    margin-top: 24px;
+    font-family: var(--plex-mono);
+    font-size: 13px;
+    color: var(--brass);
+    border-bottom: 1px solid var(--brass-dim);
+    padding-bottom: 2px;
+    display: inline-block;
+  }
+  .lc-profile-link:hover { color: var(--ink); border-color: var(--ink); }
+    padding: 28px 0 40px;
+    text-align: center;
+    font-family: var(--plex-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="route-line" aria-hidden="true">
+  <svg width="3" height="2200" viewBox="0 0 3 2200" fill="none">
+    <line x1="1" y1="0" x2="1" y2="2200" stroke="#26271F" stroke-width="1" stroke-dasharray="1 7"/>
+  </svg>
+</div>
+
+<header>
+  <div class="nav-inner">
+    <div class="logo"><span class="dot">&gt;</span>vagabond<span style="color:var(--ink-faint)">.dev</span></div>
+    <nav>
+      <ul>
+        <li><a href="#about">о себе</a></li>
+        <li><a href="#stack">стек</a></li>
+        <li><a href="#path">путь</a></li>
+        <li><a href="#projects">проекты</a></li>
+        <li><a href="#leetcode">leetcode</a></li>
+        <li><a href="#contact">контакты</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero" id="top" style="border-top:none;">
+    <div class="coords">59.3293° N, 18.0686° E — текущая локация</div>
+    <h1>Vagabond<br><span>// backend</span></h1>
+    <p class="hero-sub">
+      Начинающий backend-разработчик. Учу <strong>Python</strong> с нуля.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#contact">связаться</a>
+      <a class="btn btn-ghost" href="#projects">смотреть проекты</a>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="section-head">
+      <span class="section-mark">01 / маршрут</span>
+      <h2>О себе</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          Я в самом начале пути в разработке — учу <strong>Python</strong> самостоятельно,
+          без диплома и без менторской программы. Каждую строчку кода, которую пишу,
+          стараюсь понять до конца, а не просто скопировать решение.
+        </p>
+        <p>
+          Сейчас сфокусирован на основах: структуры данных, алгоритмы, чистый код
+          и регулярная практика на LeetCode. Параллельно делаю небольшие проекты,
+          чтобы видеть, как теория превращается в рабочий код.
+        </p>
+      </div>
+      <div class="stat-list">
+        <div class="stat-row">
+          <div class="stat-label">Формат обучения</div>
+          <div class="stat-value">Самообучение</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Опыт с кодом</div>
+          <div class="stat-value brass">~2 месяцев</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Готовность к старту</div>
+          <div class="stat-value brass">сразу</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">Формат работы</div>
+          <div class="stat-value">remote / стажировка</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="section-head">
+      <span class="section-mark">02 / снаряжение</span>
+      <h2>Стек</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="stack-single">
+      <div class="python-badge">
+        <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M63.4 0C32 0 33.9 13.7 33.9 13.7l.04 14.2h30v4.2H21.8S0 29.6 0 64.3c0 34.6 19 33.4 19 33.4h11.3V81.8s-.6-19 18.6-19h29.7s17.9.3 17.9-17.3V17.4S99.4 0 63.4 0zm-16.8 9.6a5.8 5.8 0 1 1 0 11.6 5.8 5.8 0 0 1 0-11.6z" fill="#9A8866"/>
+          <path d="M64.6 128c31.4 0 29.5-13.7 29.5-13.7l-.04-14.2h-30v-4.2h42.1S128 98.4 128 63.7c0-34.6-19-33.4-19-33.4H97.7v15.9s.6 19-18.6 19H49.4s-17.9-.3-17.9 17.3v29.1S28.6 128 64.6 128zm16.8-9.6a5.8 5.8 0 1 1 0-11.6 5.8 5.8 0 0 1 0 11.6z" fill="#E8E6DD" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="pill-row">
+        <span class="pill">Python</span>
+        <span class="pill">Структуры данных</span>
+        <span class="pill">Алгоритмы</span>
+        <span class="pill">ООП</span>
+        <span class="pill">Git</span>
+      </div>
+    </div>
+    <p class="stack-note">
+      Сейчас сознательно держу фокус на одном языке — Python — чтобы пройти его глубоко,
+      а не по верхам. Остальной стек (базы данных, фреймворки, инструменты) подключу,
+      когда основы будут уверенными.
+    </p>
+  </section>
+
+  <section id="path">
+    <div class="section-head">
+      <span class="section-mark">03 / путевые точки</span>
+      <h2>Путь</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="waypoints">
+      <div class="waypoint">
+        <div class="wp-marker">старт<span class="wp-dot"></span></div>
+        <div class="wp-content">
+          <h3>Первая строчка кода</h3>
+          <div class="wp-where">Python · синтаксис, типы данных</div>
+          <p>Начал с основ языка: переменные, циклы, функции. Понял, что хочу разбираться глубже, а не просто «уметь писать код».</p>
+        </div>
+      </div>
+      <div class="waypoint">
+        <div class="wp-marker">сейчас<span class="wp-dot"></span></div>
+        <div class="wp-content">
+          <h3>Структуры данных и ООП</h3>
+          <div class="wp-where">списки, словари, классы, объекты</div>
+          <p>Перешёл от написания скриптов к проектированию кода: как хранить данные, как организовать логику в классы.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="section-head">
+      <span class="section-mark">04 / находки</span>
+      <h2>Проекты</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="gh-header-row">
+      <p style="color:var(--ink-dim); font-size:14.5px; max-width:480px;">
+        Репозитории подгружаются напрямую с GitHub — это значит, список всегда актуальный.
+      </p>
+      <a class="gh-profile-link" href="https://github.com/Vagabond-gvs" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        github.com/Vagabond-gvs
+      </a>
+    </div>
+    <div id="repo-container">
+      <div class="gh-status" id="repo-status">загружаю репозитории…</div>
+    </div>
+  </section>
+
+  <section id="leetcode">
+    <div class="section-head">
+      <span class="section-mark">05 / тренировка</span>
+      <h2>LeetCode</h2>
+      <div class="rule"></div>
+    </div>
+    <div id="leetcode-container">
+      <div class="lc-status" id="lc-status">загружаю статистику…</div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact-section">
+    <div class="section-head">
+      <span class="section-mark">06 / координаты связи</span>
+      <h2>Контакты</h2>
+      <div class="rule"></div>
+    </div>
+    <p style="color:var(--ink-dim); font-size:15px; max-width:500px; margin-bottom:8px;">
+      Открыт к стажировкам, junior-позициям и проектам, где можно расти под наблюдением тех, кто знает дорогу лучше меня.
+    </p>
+    <div class="contact-grid">
+      <a class="contact-card" href="mailto:bunguevsajdemin81@gmail.com">
+        <div class="cc-label">Email</div>
+        <div class="cc-value">bunguevsajdemin81@gmail.com</div>
+      </a>
+      <a class="contact-card" href="https://t.me/Ggjd6h" target="_blank" rel="noopener">
+        <div class="cc-label">Telegram</div>
+        <div class="cc-value">@Ggjd6h</div>
+      </a>
+      <a class="contact-card" href="https://github.com/Vagabond-gvs" target="_blank" rel="noopener">
+        <div class="cc-label">GitHub</div>
+        <div class="cc-value">Vagabond-gvs</div>
+      </a>
+      <a class="contact-card" href="https://leetcode.com/u/vagabond-gvs/" target="_blank" rel="noopener">
+        <div class="cc-label">LeetCode</div>
+        <div class="cc-value">vagabond-gvs</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  vagabond.dev — собрано по дороге, не по шаблону
+</footer>
+
+<script>
+  const GITHUB_USER = 'Vagabond-gvs';
+  const LEETCODE_USER = 'vagabond-gvs';
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days < 1) return 'сегодня';
+    if (days === 1) return 'вчера';
+    if (days < 30) return `${days} дн. назад`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} мес. назад`;
+    return `${Math.floor(months / 12)} г. назад`;
+  }
+
+  const folderIcon = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5L5.93 1.43A1.75 1.75 0 0 0 4.69 1H1.75Z"/></svg>';
+  const starIcon = '<svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>';
+
+  async function loadRepos() {
+    const container = document.getElementById('repo-container');
+    try {
+      const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=8`);
+      if (!res.ok) throw new Error('github request failed');
+      const repos = await res.json();
+      const visible = repos.filter(r => !r.fork);
+
+      if (!visible.length) {
+        container.innerHTML = `<div class="gh-status">Репозитории пока не опубликованы — заходи на <a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--brass)">github.com/${GITHUB_USER}</a> позже.</div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="repo-grid">` + visible.map(repo => `
+        <a class="repo-card" href="${repo.html_url}" target="_blank" rel="noopener">
+          <div class="repo-name">${folderIcon}${escapeHtml(repo.name)}</div>
+          <div class="repo-desc">${repo.description ? escapeHtml(repo.description) : 'без описания'}</div>
+          <div class="repo-meta">
+            ${repo.language ? `<span class="repo-lang">${escapeHtml(repo.language)}</span>` : ''}
+            <span class="repo-stars">${starIcon} ${repo.stargazers_count}</span>
+            <span>обновлено ${timeAgo(repo.updated_at)}</span>
+          </div>
+        </a>
+      `).join('') + `</div>`;
+    } catch (e) {
+      container.innerHTML = `<div class="gh-status error">Не удалось загрузить репозитории автоматически. Список целиком — на <a href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener" style="color:var(--brass)">github.com/${GITHUB_USER}</a>.</div>`;
+    }
+  }
+
+  async function loadLeetCode() {
+    const container = document.getElementById('leetcode-container');
+    try {
+      const res = await fetch(`https://leetcode-stats.tashif.codes/${LEETCODE_USER}`);
+      if (!res.ok) throw new Error('leetcode request failed');
+      const d = await res.json();
+      if (d.status !== 'success') throw new Error('leetcode user not found');
+
+      const pct = (solved, total) => total ? Math.max(2, Math.round((solved / total) * 100)) : 0;
+
+      container.innerHTML = `
+        <div class="lc-wrap">
+          <div class="lc-total">
+            <div class="lc-num">${d.totalSolved}</div>
+            <div class="lc-num-label">задач решено</div>
+            <div class="lc-sub">
+              из ${d.totalQuestions} доступных · acceptance rate ${d.acceptanceRate ? d.acceptanceRate.toFixed(1) : '—'}%
+            </div>
+          </div>
+          <div class="lc-bars">
+            <div class="lc-bar-row">
+              <div class="lc-bar-top"><span class="lc-label-easy">Easy</span><span>${d.easySolved} / ${d.totalEasy}</span></div>
+              <div class="lc-bar-track"><div class="lc-bar-fill easy" style="width:${pct(d.easySolved, d.totalEasy)}%"></div></div>
+            </div>
+            <div class="lc-bar-row">
+              <div class="lc-bar-top"><span class="lc-label-medium">Medium</span><span>${d.mediumSolved} / ${d.totalMedium}</span></div>
+              <div class="lc-bar-track"><div class="lc-bar-fill medium" style="width:${pct(d.mediumSolved, d.totalMedium)}%"></div></div>
+            </div>
+            <div class="lc-bar-row">
+              <div class="lc-bar-top"><span class="lc-label-hard">Hard</span><span>${d.hardSolved} / ${d.totalHard}</span></div>
+              <div class="lc-bar-track"><div class="lc-bar-fill hard" style="width:${pct(d.hardSolved, d.totalHard)}%"></div></div>
+            </div>
+            <a class="lc-profile-link" href="https://leetcode.com/u/${LEETCODE_USER}/" target="_blank" rel="noopener">смотреть профиль на LeetCode →</a>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = `<div class="lc-status error">Не удалось загрузить статистику автоматически. Профиль целиком — на <a href="https://leetcode.com/u/${LEETCODE_USER}/" target="_blank" rel="noopener" style="color:var(--brass)">leetcode.com/u/${LEETCODE_USER}</a>.</div>`;
+    }
+  }
+
+  loadRepos();
+  loadLeetCode();
+</script>
+</body>
+</html>
+
+<!--Kasilov borz-->
